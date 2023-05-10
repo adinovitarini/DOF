@@ -24,3 +24,6 @@ y_t = TEST.target;
 [u_q_t,z_bar_t,info_t] = q_learn_io(N,u_t,y_t,Q,R,df,u_bar_t,y_bar_t);
 %% DRQN 
 [u_lstm,K,info] = DRQN(TRAIN,TEST,N);
+%% Check Convergence 
+phi = kron(z_bar',z_bar');
+rank_phi = rank(phi)
