@@ -1,4 +1,4 @@
-function [u_lstm,K,info] = DRQN(TRAIN,TEST,N)
+function [u_lstm,K,info] = DRQN_rnn(TRAIN,TEST,N)
 tic
 input_train = TRAIN.input;
 input_test = TEST.input;
@@ -33,24 +33,15 @@ status = StabilityLSTM(net,target_test)
 %% Predict 
 net = predictAndUpdateState(net,input_test);
 [~,Qhat] = predictAndUpdateState(net,input_test);
-%% Estimate the K via mlp
-layers = [ ...
-    sequenceInputLayer(size(Qhat,1))
-    fullyConnectedLayer(size(TRAIN.y,1))
-    regressionLayer];
-options = trainingOptions('adam', ...
-    'MaxEpochs',2000, ...
-    'GradientThreshold',1, ...
-    'InitialLearnRate',0.5, ...
-    'LearnRateSchedule','piecewise', ...
-    'LearnRateDropPeriod',125, ...
-    'LearnRateDropFactor',0.5, ...
-    'Verbose',0, ...
-    'Plots','none');
-%%
-netK = trainNetwork(Qhat,TEST.y,layers,options);
-%%
-[~,K] = predictAndUpdateState(netK,Qhat);
+%% Estimate the K via RNN
+xx = con2seq(Qhat);
+yy = con2seq(target_train);
+lrn_net = layrecnet(1:2,10);
+lrn_net.trainFcn = 'trainlm';
+% lrn_net.trainParam.show = 5;
+lrn_net.trainParam.epochs = 100;
+lrn_net = train(lrn_net,xx,yy);
+K = lrn_net(target_test);
 %% Evaluate Performance 
 predictionError = target_test-Qhat; 
 thr = 0.001;
@@ -63,6 +54,6 @@ u_lstm = K.*TRAIN.y;
 info.time = time_elapsed; 
 info.status = status;
 info.net = net;
-info.netK = netK;
+info.netK = lrn_net;
 info.numCorrect = numCorrect;
 info.Qhat = Qhat;

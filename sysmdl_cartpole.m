@@ -1,5 +1,4 @@
 function cartpole = sysmdl_cartpole(N,df)
-close all;clc
 g = 9.8e-1;
 lp = 1.5;
 mp = 0.1;
@@ -9,7 +8,8 @@ a = g/(lp*(4/3 -mp/(mp+mk)));
 AA = [0 1 0 0;0 0 mp/mk*g 0;0 0 0 1;0 0 (mt)*g/(lp*mk) 0];
 b = -1/(lp*(4/3 -mp/(mp+mk)));
 BB = [0;1/mk;0;1/(lp*mk)];
-CC = [1e-2 1 1e-2 1];
+% CC = [1e-2 1 1e-2 1];
+CC = [0 1 0 1];
 D = 0;
 N = 100;
 % df = 0.1; %discount factor 
